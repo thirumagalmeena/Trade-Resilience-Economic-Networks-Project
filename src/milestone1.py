@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import altair as alt
 
-DEFAULT_DATA_PATH = Path("datasets/processed/integrated_tren_dataset_with_indexes.csv")
+DEFAULT_DATA_PATH = Path("data/processed/integrated_tren_dataset_with_indexes.csv")
 
 TRADE_COLUMNS = {
     "country": ["Country"],

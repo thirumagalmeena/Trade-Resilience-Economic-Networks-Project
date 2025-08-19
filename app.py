@@ -2,18 +2,8 @@ import streamlit as st
 from src import forecasting
 from src import visualization
 from src import policy_scenarios
-from src import milestone1
-from src import milestone2
-from src import milestone3
-from src import milestone4other
-from src import milestone5
-from src import milestone6
-from src import milestone7
-from src import milestone8
-from src import milestone9
-from src import milestone10
-from src import milestone11
-from src import milestone12
+from src import milestone1, milestone2, milestone3, milestone4, milestone5, milestone6
+from src import milestone7, milestone8, milestone9, milestone10, milestone11, milestone12
 from src import milestone13
 
 def create_feature_card(title, description, icon, page_key):
@@ -318,7 +308,7 @@ def main():
     elif page == "Drought Shock Simulation":
         milestone3.main()
     elif page == "Food Security Analysis":
-        milestone4other.main()
+        milestone4.main()
     elif page == "Youth Unemployment Projection":
         milestone5.main()
     elif page == "Export Sector Ageing Risk":
