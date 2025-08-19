@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import altair as alt
 
-DEFAULT_DATA_PATH = Path("D:/DPL 3/data/integrated_tren_dataset_with_indexes.csv")
+DEFAULT_DATA_PATH = Path("datasets/processed/integrated_tren_dataset.csv")
 
 TRADE_COLUMNS = {
     "country": ["Country"],
@@ -23,6 +23,7 @@ def extract_trade_partner_shares_from_data(df: pd.DataFrame, column_mapping: Dic
     year_col = column_mapping.get('year')
     exports_gdp_col = column_mapping.get('exports_gdp')
     imports_gdp_col = column_mapping.get('imports_gdp')
+    trade_gdp_col = column_mapping.get('trade_gdp')
     gdp_col = column_mapping.get('gdp_current')
     
     if not all([country_col, year_col, exports_gdp_col, gdp_col]):
@@ -35,36 +36,27 @@ def extract_trade_partner_shares_from_data(df: pd.DataFrame, column_mapping: Dic
     df_latest['trade_intensity'] = df_latest[exports_gdp_col].fillna(0) + df_latest[imports_gdp_col].fillna(0)
     df_latest['gdp_billions'] = df_latest[gdp_col].fillna(0) / 1e9
     
-    major_economies = df_latest[df_latest['gdp_billions'] > 300]['Country'].tolist()
-    high_trade_economies = df_latest[df_latest['trade_intensity'] > 30]['Country'].tolist()
+    major_economies = df_latest[df_latest['gdp_billions'] > 500]['Country'].tolist()
+    high_trade_economies = df_latest[df_latest['trade_intensity'] > 50]['Country'].tolist()
     
     trade_partner_shares = {}
     
     known_relationships = [
-        ("United States", "Mexico", 0.15, 0.82),
-        ("United States", "Canada", 0.17, 0.72),
-        ("Canada", "United States", 0.72, 0.17),
-        ("Mexico", "United States", 0.82, 0.15),
-        ("China", "United States", 0.13, 0.07),
-        ("United States", "China", 0.07, 0.13),
-        ("China", "Japan", 0.05, 0.19),
-        ("Japan", "China", 0.19, 0.05),
-        ("Germany", "France", 0.09, 0.11),
-        ("France", "Germany", 0.11, 0.09),
-        ("Germany", "Netherlands", 0.08, 0.14),
-        ("Netherlands", "Germany", 0.14, 0.08),
-        ("South Korea", "China", 0.21, 0.04),
-        ("China", "South Korea", 0.04, 0.21),
-        ("Australia", "China", 0.28, 0.02),
-        ("China", "Australia", 0.02, 0.28),
-        ("Brazil", "China", 0.23, 0.01),
-        ("China", "Brazil", 0.01, 0.23),
-        ("India", "United States", 0.17, 0.04),
-        ("United States", "India", 0.04, 0.17),
-        ("Germany", "China", 0.07, 0.03),
-        ("China", "Germany", 0.03, 0.07),
-        ("United Kingdom", "United States", 0.11, 0.03),
-        ("United States", "United Kingdom", 0.03, 0.11),
+        ("Canada", "United States", 0.75, 0.15),
+        ("United States", "Mexico", 0.15, 0.25),
+        
+        ("China", "United States", 0.18, 0.08),   
+        ("China", "Japan", 0.08, 0.18),           
+        ("Japan", "China", 0.22, 0.10),           
+        
+        ("Germany", "France", 0.08, 0.12),
+        ("France", "Germany", 0.15, 0.08),
+        ("Germany", "United Kingdom", 0.06, 0.10), 
+        
+        ("South Korea", "China", 0.25, 0.08),
+        ("Australia", "China", 0.35, 0.05),
+        ("Brazil", "China", 0.28, 0.02),
+        ("India", "United States", 0.18, 0.05),
     ]
     
     available_countries = set(df_latest[country_col].unique())
@@ -76,7 +68,7 @@ def extract_trade_partner_shares_from_data(df: pd.DataFrame, column_mapping: Dic
                 "export_B_to_A_share": share_b_to_a
             }
     
-    for country in high_trade_economies[:30]:
+    for country in high_trade_economies[:10]:
         if country in major_economies:
             for partner in major_economies:
                 if country != partner and (country, partner) not in trade_partner_shares:
@@ -84,23 +76,24 @@ def extract_trade_partner_shares_from_data(df: pd.DataFrame, column_mapping: Dic
                     partner_data = df_latest[df_latest[country_col] == partner].iloc[0]
                     
                     if country_data['gdp_billions'] < partner_data['gdp_billions']:
-                        share_to_partner = min(0.15, country_data['trade_intensity'] / 300)
-                        share_from_partner = min(0.08, partner_data['trade_intensity'] / 400)
-                    else:
-                        share_to_partner = min(0.08, country_data['trade_intensity'] / 400)
+                        share_to_partner = min(0.25, country_data['trade_intensity'] / 200)
                         share_from_partner = min(0.15, partner_data['trade_intensity'] / 300)
+                    else:
+                        share_to_partner = min(0.15, country_data['trade_intensity'] / 300)
+                        share_from_partner = min(0.25, partner_data['trade_intensity'] / 200)
                     
-                    if share_to_partner > 0.01 or share_from_partner > 0.01:
+                    if share_to_partner > 0.05 or share_from_partner > 0.05:
                         trade_partner_shares[(country, partner)] = {
                             "export_A_to_B_share": share_to_partner,
                             "export_B_to_A_share": share_from_partner
                         }
     
-    st.info(f"Generated {len(trade_partner_shares)} trade relationships from data analysis and known patterns")
+    st.info(f"Generated {len(trade_partner_shares)} trade relationships from data analysis")
     
     return trade_partner_shares
 
 def generate_bilateral_pairs(df: pd.DataFrame, column_mapping: Dict[str, Optional[str]]) -> List[Dict]:
+
     country_col = column_mapping.get('country')
     year_col = column_mapping.get('year')
     exports_gdp_col = column_mapping.get('exports_gdp')
@@ -144,7 +137,7 @@ def generate_bilateral_pairs(df: pd.DataFrame, column_mapping: Dict[str, Optiona
         export_B_to_A = total_exports_B * shares["export_B_to_A_share"]
         trade_volume = export_A_to_B + export_B_to_A
         
-        if trade_volume > 0.1:
+        if trade_volume > 1.0:
             bilateral_pairs.append({
                 "pair": (country_A, country_B),
                 "export_A_to_B": export_A_to_B,
@@ -175,7 +168,7 @@ def load_trade_data() -> pd.DataFrame:
         
         numeric_cols = df.select_dtypes(include=[np.number]).columns
         df[numeric_cols] = df.groupby('Country')[numeric_cols].transform(
-            lambda x: x.fillna(x.mean()) if x.mean() > 0 else x.fillna(0)
+            lambda x: x.fillna(x.mean())
         )
         
         return df
@@ -254,7 +247,7 @@ def compute_mutual_benefit_index(df: pd.DataFrame, column_mapping: Dict[str, Opt
             'Mutual_Benefit_Index': float(mutual_benefit),
             'Dependency_A': float(dependency_A),
             'Dependency_B': float(dependency_B),
-            'Risk_Category': 'High' if mutual_benefit > 10 else 'Medium' if mutual_benefit > 5 else 'Low'
+            'Risk_Category': 'High' if mutual_benefit > 5 else 'Medium' if mutual_benefit > 2 else 'Low'
         })
     
     results_df = pd.DataFrame(results).sort_values('Mutual_Benefit_Index', ascending=False)
@@ -295,23 +288,23 @@ def simulate_trade_collapse(df: pd.DataFrame, mbi_df: pd.DataFrame,
         export_pct_A = pair_info['Export_Pct_A']
         export_pct_B = pair_info['Export_Pct_B']
         
-        multiplier_A = 1.0 + (import_intensity_A / 100)
+        multiplier_A = 1.0
         if import_intensity_A > 50:
-            multiplier_A += 0.5
+            multiplier_A = 2.0
         elif import_intensity_A > 30:
-            multiplier_A += 0.2
+            multiplier_A = 1.5
         
-        multiplier_B = 1.0 + (import_intensity_B / 100)
+        multiplier_B = 1.0
         if import_intensity_B > 50:
-            multiplier_B += 0.5
+            multiplier_B = 2.0
         elif import_intensity_B > 30:
-            multiplier_B += 0.2
+            multiplier_B = 1.5
         
         gdp_impact_A = -export_pct_A * shock_magnitude * multiplier_A
         gdp_impact_B = -export_pct_B * shock_magnitude * multiplier_B
         
-        recovery_years_A = max(1, min(5, int(abs(gdp_impact_A) / 3)))
-        recovery_years_B = max(1, min(5, int(abs(gdp_impact_B) / 3)))
+        recovery_years_A = max(1, min(5, int(abs(gdp_impact_A) / 5)))
+        recovery_years_B = max(1, min(5, int(abs(gdp_impact_B) / 5)))
         
         results.append({
             'Pair': pair_str,
@@ -393,12 +386,12 @@ def create_trade_visualizations(mbi_df: pd.DataFrame, shock_results: pd.DataFram
         )
         
         shock_chart = alt.Chart(melted).mark_bar().encode(
-            x=alt.X('GDP_Impact:Q', title='GDP Impact (%)', axis=alt.Axis(format='.1f')),
+            x=alt.X('GDP_Impact:Q', title='GDP Impact (%)'),
             y=alt.Y('Pair:N', title='Country Pair'),
             color=alt.Color('Country:N',
-                            scale=alt.Scale(scheme='category20'),
+                            scale=alt.Scale(scheme='category10'),
                             title='Country'),
-            tooltip=['Pair:N', 'Country:N', 'GDP_Impact:Q', 'Recovery_Years_A:Q', 'Recovery_Years_B:Q']
+            tooltip=['Pair:N', 'Country:N', 'GDP_Impact:Q']
         ).properties(
             width=600,
             height=300,
@@ -408,8 +401,7 @@ def create_trade_visualizations(mbi_df: pd.DataFrame, shock_results: pd.DataFram
         st.altair_chart(shock_chart, use_container_width=True)
 
 def main():
-    st.markdown('<div class="main-header">Trade Relationship Mutual Benefit Analysis</div>', 
-                unsafe_allow_html=True)
+    st.markdown("## Trade Relationship Mutual Benefit Analysis")
     st.caption("Identifying country pairs with highest mutual trade benefit and simulating collapse impacts")
  
     with st.spinner("Loading trade data..."):
@@ -430,7 +422,7 @@ def main():
         min_value=10, max_value=100, value=100, step=10
     ) / 100
     
-    st.header("Mutual Benefit Index (MBI) Analysis")
+    st.markdown("## Mutual Benefit Index (MBI) Analysis")
     
     with st.spinner("Computing Mutual Benefit Index..."):
         try:
@@ -578,7 +570,7 @@ def main():
         )
     
     with st.expander("Methodology & Assumptions", expanded=False):
-        st.markdown("""\
+        st.markdown("""
         ### Mutual Benefit Index (MBI) Calculation
         
         **Components:**
@@ -587,43 +579,43 @@ def main():
         - Scaled to reflect mutual dependency (0-100)
         
         **Risk Categories:**
-        - **High Risk**: MBI > 10 (Very high mutual dependency)
-        - **Medium Risk**: MBI 5-10 (Moderate mutual dependency)
-        - **Low Risk**: MBI < 5 (Low mutual dependency)
+        - **High Risk**: MBI > 5 (High mutual dependency)
+        - **Medium Risk**: MBI 2-5 (Moderate mutual dependency)
+        - **Low Risk**: MBI < 2 (Low mutual dependency)
         
         ### Dynamic Trade Partner Detection
         
         **Data-Driven Approach:**
         - Analyzes countries with high trade dependency indices and GDP values
-        - Incorporates expanded known major trade relationships based on 2024 economic patterns
+        - Incorporates known major trade relationships based on economic patterns
         - Estimates bilateral trade shares using:
           * Relative economic size (GDP)
           * Trade intensity (exports + imports as % of GDP)
-          * Updated shares from recent global trade data
+          * Geographic and economic proximity patterns
         
         **Estimated Trade Relationships Include:**
-        - North American partnerships (US-Mexico, US-Canada)
-        - Key Asian trade corridors (China-US, China-Japan, China-South Korea, China-Australia)
-        - European economic partnerships (Germany-France, Germany-Netherlands)
-        - Resource and manufacturing trade (Brazil-China, India-US, Germany-China)
-        - Other major pairs (UK-US)
+        - Major North American partnerships (US-Canada, US-Mexico)
+        - Key Asian trade corridors (China-US, China-Japan, Korea-China)
+        - European economic partnerships (Germany-France, Germany-UK)
+        - Resource trade relationships (Australia-China, Brazil-China)
+        - Service and technology trade (India-US)
         
         ### Trade Collapse Simulation
         
         **Assumptions:**
         - **Direct Impact**: GDP loss = Estimated export to partner (% of GDP) × Shock magnitude
-        - **Multiplier Effects**: Base 1.0 + (import intensity / 100), plus 0.5 if >50%, 0.2 if >30%
-        - **Recovery Time**: 1-5 years based on impact severity (1 year per 3% GDP loss)
-        - **Bilateral Trade Estimation**: Uses total exports (% of GDP) from the dataset and dynamically estimated trade partner shares based on recent global data
+        - **Multiplier Effects**: 1.0-2.0 based on import intensity (>50%: 2.0, >30%: 1.5)
+        - **Recovery Time**: 1-5 years based on impact severity (1 year per 5% GDP loss)
+        - **Bilateral Trade Estimation**: Uses total exports (% of GDP) from the dataset and dynamically estimated trade partner shares based on economic analysis
         
         **Data Sources:**
         - Primary data from integrated dataset with trade, GDP, and economic indicators
-        - Trade relationship patterns updated from 2024 global trade statistics (e.g., US Census, WTO, UNCTAD)
-        - Bilateral trade shares estimated using real-world approximate shares for accuracy
+        - Trade relationship patterns derived from economic size and trade intensity analysis
+        - Bilateral trade shares estimated using heuristic models based on typical trade patterns
         
         **Limitations:**
-        - Bilateral trade values are estimated using economic heuristics and recent data, not always actual bilateral figures
-        - Trade relationship estimates may evolve; based on 2024 patterns
+        - Bilateral trade values are estimated using economic heuristics, not actual bilateral trade data
+        - Trade relationship estimates are based on typical patterns and may not reflect exact current relationships
         - Assumes static trade relationships without dynamic adjustments
         - Simplified multiplier effects may not capture full economic spillovers
         - Limited to countries present in the dataset

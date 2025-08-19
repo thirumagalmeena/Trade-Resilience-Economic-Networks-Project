@@ -41,7 +41,7 @@ def load_sample_data():
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_csv(r"D:/DPL 3/data/integrated_tren_dataset_with_indexes.csv")
+        df = pd.read_csv(r"datasets/processed/integrated_tren_dataset.csv")
         return df
     except:
         st.warning("Dataset file not found. Using generated sample data.")

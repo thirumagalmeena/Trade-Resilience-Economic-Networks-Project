@@ -282,7 +282,8 @@ def main():
     and simulating the impact of network disruptions.
     """)
     
-    file_path = r"D:/DPL 3/data/integrated_tren_dataset_with_indexes.csv"
+    file_path = r"datasets/processed/integrated_tren_dataset.csv"
+    
     with st.spinner("Loading and processing dataset..."):
         df = load_and_prepare_data(file_path)
     

@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import altair as alt
 
-DEFAULT_DATA_PATH = Path("D:/DPL 3/data/processed/integrated_tren_dataset.csv")
+DEFAULT_DATA_PATH = Path("datasets/processed/integrated_tren_dataset_with_indexes.csv")
 
 TRADE_COLUMNS = {
     "country": ["Country"],
@@ -124,6 +124,7 @@ def resolve_columns(df: pd.DataFrame) -> Dict[str, Optional[str]]:
 
 def compute_trade_dependency_index(df: pd.DataFrame, column_mapping: Dict[str, Optional[str]], 
                                  latest_year_only: bool = True) -> pd.DataFrame:
+
     country_col = column_mapping['country']
     year_col = column_mapping['year']
     
@@ -211,6 +212,7 @@ def compute_trade_dependency_index(df: pd.DataFrame, column_mapping: Dict[str, O
 def simulate_trade_shock_impact(tdi_df: pd.DataFrame, trade_df: pd.DataFrame, 
                               column_mapping: Dict[str, Optional[str]], 
                               shock_countries: List[str], shock_magnitude: float = 0.4) -> pd.DataFrame:
+
     results = []
     
     for country in shock_countries:
@@ -330,7 +332,7 @@ def main():
     st.title("Trade Dependency Risk Analysis")
     st.caption("Identifying countries most vulnerable to single-partner trade collapse")
  
-    uploaded_file = DEFAULT_DATA_PATH
+    uploaded_file = "datasets/processed/integrated_tren_dataset.csv"
 
     with st.spinner("Loading trade data..."):
         df = load_trade_data(uploaded_file)

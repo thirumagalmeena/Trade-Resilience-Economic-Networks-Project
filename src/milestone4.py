@@ -6,8 +6,7 @@ from typing import Dict, List, Optional
 import altair as alt
 import uuid
 
-#DEFAULT_DATA_PATH = Path("D:/DPL 3/data/processed/integrated_tren_dataset.csv")
-DEFAULT_DATA_PATH = Path("D:/DPL 3/data/integrated_tren_dataset_with_indexes.csv")
+DEFAULT_DATA_PATH = Path("datasets/processed/integrated_tren_dataset.csv")
 
 AGRI_COLUMNS = {
     "country": ["Country"],

@@ -12,12 +12,11 @@ import warnings
 import uuid
 
 warnings.filterwarnings('ignore')
-st.set_page_config(page_title="Economic Prediction Dashboard", layout="wide")
 
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_csv(r"D:/DPL 3/data/integrated_tren_dataset_with_indexes.csv")
+        df = pd.read_csv(r"datasets/processed/integrated_tren_dataset.csv")
         return df
     except:
         st.error("Could not load the dataset. Please check the file path.")

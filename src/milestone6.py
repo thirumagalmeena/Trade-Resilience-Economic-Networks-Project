@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 import altair as alt
 
-DEFAULT_DATA_PATH = Path("D:/DPL 3/data/processed/integrated_tren_dataset.csv")
+DEFAULT_DATA_PATH = Path("datasets/processed/integrated_tren_dataset.csv")
 
 EXPORT_COLUMNS = {
     "country": ["Country"],
@@ -125,7 +125,6 @@ def simulate_productivity_impact(df: pd.DataFrame, edi_df: pd.DataFrame,
         export_intensity = country_info['Export_Intensity_GDP']
         baseline_median_age = country_info['Median_Age']
         
-        # Quadratic productivity model: 1 - 0.001 * (age - 45)^2, peaks at age 45
         def productivity(age):
             return max(0, 1 - 0.001 * (age - 45) ** 2)
         
@@ -195,7 +194,6 @@ def create_export_visualizations(edi_df: pd.DataFrame, shock_results: pd.DataFra
     if shock_results is not None and not shock_results.empty:
         st.subheader("Productivity Impact Simulation")
         
-        # Create separate charts for each age increase
         for age_increase in [5, 10, 15]:
             age_data = shock_results[shock_results['Age_Increase_Years'] == age_increase]
             if not age_data.empty:
@@ -384,7 +382,6 @@ def main():
         
         ### Data Sources & Limitations
         
-        - Relies on dataset at `D:/DPL 3/data/processed/integrated_tren_dataset.csv`
         - Median age data sourced from UN/World Bank 2025 estimates
         - Assumes labor-intensive export sectors (e.g., manufacturing) are most affected
         - Productivity model is simplified; real impacts vary by sector and mitigation strategies

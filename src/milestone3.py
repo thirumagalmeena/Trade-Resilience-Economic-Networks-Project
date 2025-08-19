@@ -6,7 +6,7 @@ from typing import Optional, Dict
 from sklearn.linear_model import LinearRegression
 import streamlit as st
 
-DEFAULT_DATA_PATH = "D:/DPL 3/data/processed/integrated_tren_dataset.csv"
+DEFAULT_DATA_PATH = "datasets/processed/integrated_tren_dataset.csv"
 MIN_YEARS_FOR_TREND = 5
 np.random.seed(42)
 
@@ -185,12 +185,6 @@ def main(data_path: Optional[str] = None, df: Optional[pd.DataFrame] = None):
         df = create_synthetic_data()
         cols = detect_columns(df)
         st.success("Synthetic agricultural data loaded successfully!")
-    
-    with st.expander("Data Overview"):
-        st.write(f"**Dataset shape:** {df.shape}")
-        st.write(f"**Countries:** {df[cols['country']].nunique()}")
-        st.write(f"**Years:** {df[cols['year']].min()}-{df[cols['year']].max()}")
-        st.dataframe(df.head())
     
     st.subheader("Simulation Parameters")
     col1, col2, col3 = st.columns(3)

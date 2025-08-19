@@ -1,5 +1,3 @@
-# milestone11.py full code
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -7,7 +5,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 import altair as alt
 
-DEFAULT_DATA_PATH = Path("D:/DPL 3/data/integrated_tren_dataset_with_indexes.csv")
+DEFAULT_DATA_PATH = Path("datasets/processed/integrated_tren_dataset.csv")
 
 SCENARIO_COLUMNS = {
     "country": ["Country"],

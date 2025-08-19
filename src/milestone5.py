@@ -8,7 +8,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.exceptions import NotFittedError
 import plotly.graph_objects as go
 
-DEFAULT_DATA_PATH = "D:/DPL 3/data/processed/integrated_tren_dataset.csv"
+DEFAULT_DATA_PATH = "datasets/processed/integrated_tren_dataset.csv"
 MIN_YEARS_FOR_TREND = 3
 RANDOM_SEED = 42
 np.random.seed(RANDOM_SEED)
@@ -153,15 +153,6 @@ def _render_streamlit_ui(df: pd.DataFrame, cols: Dict[str, str]):
     global_slowdown_pp = st.sidebar.number_input("Global slowdown (pp reduction in annual GDP growth)", min_value=0.0, max_value=10.0, value=1.5, step=0.1)
     target_year = st.sidebar.number_input("Target year for outcome", min_value=2025, max_value=2035, value=2030, step=1)
 
-    st.markdown("### Data Overview")
-    sample_cols = [v for v in cols.values() if v is not None]
-    if sample_cols:
-        st.write("Sample data:")
-        st.dataframe(df[sample_cols].dropna().head(10))
-    else:
-        st.error("No relevant columns detected. Please upload a CSV with youth unemployment and GDP growth data.")
-        return
-
     if st.button("Run Prediction", type="primary"):
         try:
             with st.spinner("Estimating model and projecting..."):
@@ -186,14 +177,14 @@ def _render_streamlit_ui(df: pd.DataFrame, cols: Dict[str, str]):
             high_risk = scenario_df[scenario_df["flag_above_25pct"]]
             if len(high_risk) > 0:
                 st.dataframe(
-                    high_risk[["country", "baseline_2030", "scenario_2030", "delta_unemp_pp", "baseline_gdp_recent"]].round(2),
+                    high_risk[["country", "baseline_2030", "scenario_2030", "baseline_gdp_recent"]].round(2),
                     use_container_width=True
                 )
             else:
                 st.info("No countries predicted to exceed 25% youth unemployment under this scenario.")
 
-            st.markdown("#### All Countries (Top 20 by scenario youth unemployment)")
-            display_cols = ["country", "baseline_2030", "scenario_2030", "delta_unemp_pp", "baseline_gdp_recent"]
+            st.markdown("#### Top 20 by scenario youth unemployment")
+            display_cols = ["country", "baseline_2030", "scenario_2030", "baseline_gdp_recent"]
             st.dataframe(scenario_df[display_cols].head(20).round(2), use_container_width=True)
 
             st.markdown("#### Visualization: Top 20 Countries by Projected Youth Unemployment")
