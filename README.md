@@ -56,7 +56,7 @@ The project addresses 13 specific problems, including:
 ## Installation
 1. Clone the repository:
    ```
-   git clone https://github.com/thirumagalmeena/tren-dataset-project.git
+   git clone https://github.com/thirumagalmeena/Trade-Resilience-Economic-Networks-Project.git
    ```
 2. Navigate to the project directory:
    ```
